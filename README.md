@@ -1,3 +1,3 @@
 # packet-test
 
-Experiments with the Packet Pair and Packet Train techniques.
+Experiments with the Packet Pair and Packet Train protocols.
