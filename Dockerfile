@@ -11,7 +11,7 @@ COPY ./ ./
 RUN ./build.sh
 
 FROM alpine:3.19.1
-WORKDIR /pp
+WORKDIR /packet-test
 COPY --from=build /packet-test/server /packet-test/
 
 ENTRYPOINT ["./server"]
