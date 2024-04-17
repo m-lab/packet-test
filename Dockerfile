@@ -1,4 +1,3 @@
-# Built the command using a golang base image.
 FROM golang:1.22-alpine AS build
 RUN apk add gcc git linux-headers musl-dev
 WORKDIR /packet-test
