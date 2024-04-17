@@ -26,7 +26,7 @@ func (h *Client) ProcessPacketLoop(conn net.PacketConn) {
 			continue
 		}
 
-		log.Errorf("Received UDP packet addr: %s, n: %d, data: %s ", addr.String(), n, string(buf[:n]))
+		log.Infof("Received UDP packet addr: %s, n: %d, data: %s ", addr.String(), n, string(buf[:n]))
 		err = sendPairs(conn, addr)
 		if err != nil {
 			log.Errorf("Failed packet pair: %v", err)
@@ -52,7 +52,7 @@ func sendPairs(conn net.PacketConn, addr net.Addr) error {
 			return err
 		}
 
-		time.Sleep(static.PairGap)
+		time.Sleep(static.PairDelay)
 		pkt.Sequence++
 	}
 
