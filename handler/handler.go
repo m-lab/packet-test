@@ -25,10 +25,18 @@ func (h *Client) ProcessPacketLoop(conn net.PacketConn) {
 			continue
 		}
 
-		log.Infof("Received UDP packet addr: %s, n: %d, data: %s ", addr.String(), n, string(buf[:n]))
-		err = sendTrains(conn, addr)
+		msg := string(buf[:n])
+		log.Infof("Received UDP packet addr: %s, n: %d, type: %s ", addr.String(), n, msg)
+
+		switch msg {
+		case "pair1":
+			err = sendPairs(conn, addr)
+		case "train1":
+			err = sendTrains(conn, addr)
+		}
+
 		if err != nil {
-			log.Errorf("Failed packet pair: %v", err)
+			log.Errorf("Failed %s test: %v", msg, err)
 		}
 	}
 }
