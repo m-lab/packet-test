@@ -29,6 +29,6 @@ func main() {
 	json, err := schema.ToJSONFields()
 	rtx.Must(err, "Failed to marshal pair1 schema")
 
-	err = os.WriteFile(pair1Schema, json, 0777)
+	err = os.WriteFile(pair1Schema, json, 0o644)
 	rtx.Must(err, "Failed to write pair1 schema")
 }
