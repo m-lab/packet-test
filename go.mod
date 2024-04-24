@@ -2,7 +2,7 @@ module github.com/m-lab/packet-test
 
 go 1.22
 
-require github.com/m-lab/go v0.1.72
+require github.com/m-lab/go v0.1.73-0.20240424141956-e4d475b7b351
 
 require (
 	github.com/pkg/errors v0.8.1 // indirect
