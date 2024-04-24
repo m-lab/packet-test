@@ -18,6 +18,8 @@ var (
 )
 
 func main() {
+	flag.Parse()
+
 	udpSocket, err := net.ResolveUDPAddr("udp", *server)
 
 	rtx.Must(err, "ResolveUDPAddr failed")
@@ -51,7 +53,7 @@ func receiveTrains(conn *net.UDPConn) {
 		log.Errorf("Failed to calculate bandwidth: %v", err)
 		return
 	}
-	log.Infof("Bandwidth: %d", mode)
+	log.Infof("Bandwidth: %d Mbps", mode)
 }
 
 func receiveTrain(conn *net.UDPConn) ([]*api.Received, error) {
