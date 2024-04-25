@@ -2,7 +2,10 @@ module github.com/m-lab/packet-test
 
 go 1.22
 
-require github.com/m-lab/go v0.1.73
+require (
+	cloud.google.com/go/bigquery v1.60.0
+	github.com/m-lab/go v0.1.73
+)
 
 require (
 	cloud.google.com/go v0.112.1 // indirect
@@ -24,6 +27,7 @@ require (
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
 	github.com/pierrec/lz4/v4 v4.1.18 // indirect
+	github.com/pkg/errors v0.8.1 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
 	go.opencensus.io v0.24.0 // indirect
@@ -52,7 +56,7 @@ require (
 )
 
 require (
-	cloud.google.com/go/bigquery v1.60.0
+	github.com/apex/log v1.9.0
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/sys v0.19.0 // indirect
 )

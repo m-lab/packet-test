@@ -8,4 +8,6 @@ const (
 	PacketBytes = 726
 	PairCount   = 30
 	PairDelay   = 10000 * time.Microsecond
+	TrainCount  = 10
+	TrainLength = 30
 )
