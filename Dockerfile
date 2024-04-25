@@ -12,5 +12,8 @@ RUN ./build.sh
 FROM alpine:3.19.1
 WORKDIR /packet-test
 COPY --from=build /packet-test/server /packet-test/
+COPY --from=build /packet-test/generate-schema /packet-test/
+
+RUN /packet-test/generate-schema -pair1=/packet-test/pair1.json
 
 ENTRYPOINT ["./server"]
