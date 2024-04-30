@@ -8,11 +8,10 @@ import (
 
 	"github.com/m-lab/packet-test/api"
 	"github.com/m-lab/packet-test/static"
-	log "github.com/sirupsen/logrus"
 )
 
 func (c *Client) sendTrains(conn net.PacketConn, addr net.Addr) (*api.Train1Result, error) {
-	log.Info("Sending trains")
+	// log.Info("Sending trains")
 
 	result := &api.Train1Result{
 		Server:    conn.LocalAddr().String(),
