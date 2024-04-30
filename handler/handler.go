@@ -60,6 +60,7 @@ func (c *Client) ProcessPacketLoop(conn net.PacketConn) {
 }
 
 func (c *Client) handleResult(conn net.PacketConn, datatype string, err error, data interface{}) error {
+	log.Info(data)
 	if err != nil {
 		return err
 	}
