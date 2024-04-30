@@ -10,7 +10,7 @@ import (
 	"github.com/m-lab/packet-test/static"
 )
 
-func sendPairs(conn net.PacketConn, addr net.Addr) error {
+func (c *Client) sendPairs(conn net.PacketConn, addr net.Addr) error {
 	log.Info("Sending pairs")
 	pkt := &api.Packet{
 		Sequence: 0,

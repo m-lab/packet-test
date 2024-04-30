@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"net"
 
 	"github.com/m-lab/go/rtx"
@@ -10,6 +11,7 @@ import (
 
 var (
 	ctx, cancel = context.WithCancel(context.Background())
+	dataDir     = flag.String("datadir", "./data", "Path to write data out to.")
 )
 
 func main() {
@@ -20,7 +22,7 @@ func main() {
 	rtx.Must(err, "ListenUDP failed")
 	defer conn.Close()
 
-	h := handler.Client{}
+	h := handler.New(*dataDir)
 	go h.ProcessPacketLoop(conn)
 
 	<-ctx.Done()

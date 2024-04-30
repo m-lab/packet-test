@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"net"
 	"time"
 
@@ -30,30 +31,61 @@ func main() {
 	_, err = conn.Write([]byte("train1"))
 	rtx.Must(err, "Kickoff failed")
 
-	receiveTrains(conn)
+	measurements, err := receiveTrains(conn)
+	if err != nil {
+		log.Errorf("Packed train test failed: %v", err)
+	}
+
+	err = sendMeasurements(conn, measurements)
+	if err != nil {
+		log.Errorf("Failed to send measurements to server: %v", err)
+	}
 }
 
-func receiveTrains(conn *net.UDPConn) {
-	measurements := make([]int64, static.TrainCount)
+func receiveTrains(conn *net.UDPConn) ([]api.Measurement, error) {
+	measurements := make([]api.Measurement, static.TrainCount)
+	bw := make([]int64, static.TrainCount)
 
 	for i := 0; i < static.TrainCount; i++ {
 		train, err := receiveTrain(conn)
 		if err != nil {
-			log.Errorf("Failed to receive packet train: %v", err)
-			return
+			return nil, fmt.Errorf("Failed to receive packet train: %v", err)
 		}
 
 		delta := getDelta(train[1].Received, train[static.TrainLength-1].Received)
-		bw := (train[1].Size << 3) * (static.TrainLength - 1) / delta
-		measurements[i] = bw
+		log.Infof("delta: %d usec", delta)
+		bw[i] = (train[1].Size << 3) * (static.TrainLength - 1) / delta
+		log.Infof("bw: %d Mbps", bw[i])
+		measurements[i] = api.Measurement{
+			Packets:    train,
+			Dispersion: delta,
+			Bandwidth:  bw[i],
+		}
 	}
 
-	mode, err := mathx.Mode(measurements)
+	mode, err := mathx.Mode(bw)
 	if err != nil {
-		log.Errorf("Failed to calculate bandwidth: %v", err)
-		return
+		return measurements, fmt.Errorf("Failed to calculate bandwidth: %v", err)
 	}
 	log.Infof("Bandwidth: %d Mbps", mode)
+
+	return measurements, nil
+}
+
+func sendMeasurements(conn *net.UDPConn, measurements []api.Measurement) error {
+	for _, m := range measurements {
+		b, err := json.Marshal(m)
+		if err != nil {
+			return err
+		}
+
+		_, err = conn.Write(b)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func receiveTrain(conn *net.UDPConn) ([]*api.Received, error) {
@@ -74,7 +106,8 @@ func receiveTrain(conn *net.UDPConn) ([]*api.Received, error) {
 
 		t := time.Now().UTC()
 		rcvd := &api.Received{
-			Packet:   pkt,
+			Sequence: pkt.Sequence,
+			Sent:     time.UnixMicro(pkt.Sent),
 			Received: t,
 			Size:     int64(n),
 		}
