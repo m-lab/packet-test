@@ -4,8 +4,8 @@ import "time"
 
 // Packet represents the packet sent for network testing.
 type Packet struct {
-	Sequence int    // ID.
-	Sent     int64  // Timestamp (sent).
+	Sequence int    // Sequence.
+	Sent     int64  // Sent timestamp.
 	Data     []byte // Data transmitted.
 }
 
