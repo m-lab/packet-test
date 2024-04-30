@@ -74,6 +74,7 @@ func (c *Client) handleResult(conn net.PacketConn, datatype string, err error, d
 func (c *Client) writeMeasurements(conn net.PacketConn, datatype string, data interface{}) error {
 	t := time.Now().UTC()
 	dir := path.Join(c.dataDir, datatype, t.Format(timex.YYYYMMDDWithSlash))
+	log.Info(dir)
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
 		return err
