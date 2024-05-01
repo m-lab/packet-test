@@ -11,11 +11,13 @@ import (
 )
 
 var (
-	pair1Schema string
+	pair1Schema  string
+	train1Schema string
 )
 
 func init() {
 	flag.StringVar(&pair1Schema, "pair1", "/var/spool/datatypes/pair1.json", "Path to write the pair1 schema out to.")
+	flag.StringVar(&train1Schema, "train1", "/var/spool/datatypes/train1.json", "Path to write the train1 schema out to.")
 }
 
 func main() {
@@ -31,4 +33,15 @@ func main() {
 
 	err = os.WriteFile(pair1Schema, json, 0o644)
 	rtx.Must(err, "Failed to write pair1 schema")
+
+	train1Result := api.Train1Result{}
+	schema, err = bigquery.InferSchema(train1Result)
+	rtx.Must(err, "Failed to generate train1 schema")
+
+	schema = bqx.RemoveRequired(schema)
+	json, err = schema.ToJSONFields()
+	rtx.Must(err, "Failed to marshal train1 schema")
+
+	err = os.WriteFile(train1Schema, json, 0o644)
+	rtx.Must(err, "Failed to write train1 schema")
 }
