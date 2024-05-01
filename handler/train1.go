@@ -8,22 +8,22 @@ import (
 
 	"github.com/m-lab/packet-test/api"
 	"github.com/m-lab/packet-test/static"
+	log "github.com/sirupsen/logrus"
 )
 
-func (c *Client) sendTrains(conn net.PacketConn, addr net.Addr) (*api.Train1Result, error) {
-	// log.Info("Sending trains")
+func (c *Client) sendTrains(conn net.PacketConn, tcpConn *net.TCPListener, addr net.Addr) (*api.Train1Result, error) {
+	log.Info("Sending trains")
 
 	result := &api.Train1Result{
-		Server:    conn.LocalAddr().String(),
-		Client:    addr.String(),
-		StartTime: time.Now(),
+		Server: c.hostname,
+		Client: addr.String(),
+	}
+	pkt := &api.Packet{
+		Sequence: 0,
+		Data:     make([]byte, static.PacketBytes),
 	}
 
 	for i := 0; i < static.TrainCount; i++ {
-		pkt := &api.Packet{
-			Sequence: 0,
-			Data:     make([]byte, static.PacketBytes),
-		}
 		for j := 0; j < static.TrainLength; j++ {
 			err := sendPacket(conn, addr, pkt)
 			if err != nil {
@@ -34,34 +34,33 @@ func (c *Client) sendTrains(conn net.PacketConn, addr net.Addr) (*api.Train1Resu
 		pkt.Sequence++
 	}
 
-	measurements, err := receiveMeasurements(conn)
+	measurements, err := receiveMeasurements(tcpConn)
 	if err != nil {
 		return nil, err
 	}
 	result.Measurements = measurements
-	last := measurements[len(measurements)-1].Packets
-	result.EndTime = last[len(last)-1].Received
 
 	return result, nil
 }
 
-func receiveMeasurements(conn net.PacketConn) ([]api.Measurement, error) {
-	buf := make([]byte, math.MaxUint16)
+func receiveMeasurements(listener *net.TCPListener) ([]api.Measurement, error) {
 	measurements := make([]api.Measurement, static.TrainCount)
 
-	for i := 0; i < static.TrainCount; i++ {
-		n, _, err := conn.ReadFrom(buf)
-		if err != nil {
-			return nil, err
-		}
+	conn, err := listener.Accept()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
 
-		measurement := api.Measurement{}
-		err = json.Unmarshal(buf[:n], &measurement)
-		if err != nil {
-			return nil, err
-		}
+	buf := make([]byte, math.MaxUint16)
+	n, err := conn.Read(buf)
+	if err != nil {
+		return nil, err
+	}
 
-		measurements[i] = measurement
+	err = json.Unmarshal(buf[:n], &measurements)
+	if err != nil {
+		return nil, err
 	}
 
 	return measurements, nil

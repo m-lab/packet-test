@@ -18,18 +18,20 @@ var errNoData = errors.New("failed to receive measurement result")
 
 // Client handles requests for packet tests.
 type Client struct {
-	dataDir string
+	dataDir  string
+	hostname string
 }
 
 // New returns a new instance of *Client.
-func New(dataDir string) *Client {
+func New(dataDir string, hostname string) *Client {
 	return &Client{
-		dataDir: dataDir,
+		dataDir:  dataDir,
+		hostname: hostname,
 	}
 }
 
 // ProcessPacketLoop listens for a kickoff UDP packet and then runs a packet test.
-func (c *Client) ProcessPacketLoop(conn net.PacketConn) {
+func (c *Client) ProcessPacketLoop(conn net.PacketConn, tcpConn *net.TCPListener) {
 	log.Info("Listening for UDP packets")
 
 	buf := make([]byte, static.BufferBytes)
@@ -49,7 +51,7 @@ func (c *Client) ProcessPacketLoop(conn net.PacketConn) {
 		case "pair1":
 			err = c.sendPairs(conn, addr)
 		case "train1":
-			result, err = c.sendTrains(conn, addr)
+			result, err = c.sendTrains(conn, tcpConn, addr)
 		}
 
 		err = c.handleResult(conn, msg, err, result)
@@ -60,7 +62,6 @@ func (c *Client) ProcessPacketLoop(conn net.PacketConn) {
 }
 
 func (c *Client) handleResult(conn net.PacketConn, datatype string, err error, data interface{}) error {
-	log.Info(data)
 	if err != nil {
 		return err
 	}
@@ -75,7 +76,6 @@ func (c *Client) handleResult(conn net.PacketConn, datatype string, err error, d
 func (c *Client) writeMeasurements(conn net.PacketConn, datatype string, data interface{}) error {
 	t := time.Now().UTC()
 	dir := path.Join(c.dataDir, datatype, t.Format(timex.YYYYMMDDWithSlash))
-	log.Info(dir)
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
 		return err

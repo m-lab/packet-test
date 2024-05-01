@@ -19,8 +19,6 @@ type Pair1Result struct {
 type Train1Result struct {
 	Server       string
 	Client       string
-	StartTime    time.Time
-	EndTime      time.Time
 	Measurements []Measurement
 }
 
@@ -29,12 +27,16 @@ type Received struct {
 	Sequence int
 	Sent     time.Time
 	Received time.Time
-	Size     int64
+	Size     int64 // Bytes.
 }
 
 // Measurement represents a measurement result.
 type Measurement struct {
-	Packets    []*Received
-	Dispersion int64
-	Bandwidth  int64
+	Packets []*Received
+	Metrics
+}
+
+type Metrics struct {
+	Dispersion int64 // usecs.
+	Bandwidth  int64 // Mbps.
 }

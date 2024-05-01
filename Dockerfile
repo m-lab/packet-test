@@ -14,6 +14,6 @@ WORKDIR /packet-test
 COPY --from=build /packet-test/server /packet-test/
 COPY --from=build /packet-test/generate-schema /packet-test/
 
-RUN /packet-test/generate-schema -pair1=/packet-test/pair1.json
+RUN /packet-test/generate-schema -pair1=/packet-test/pair1.json -train1=/packet-test/train1.json
 
 ENTRYPOINT ["./server"]
