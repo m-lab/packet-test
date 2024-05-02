@@ -1,16 +1,15 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"net"
-	"time"
 
 	"github.com/apex/log"
 	"github.com/m-lab/go/mathx"
 	"github.com/m-lab/go/rtx"
 	"github.com/m-lab/packet-test/api"
+	"github.com/m-lab/packet-test/pkg/client"
 	"github.com/m-lab/packet-test/static"
 )
 
@@ -43,7 +42,7 @@ func main() {
 		log.Errorf("Packed train test failed: %v", err)
 	}
 
-	err = sendMeasurements(tcpConn, measurements)
+	err = client.SendMeasurements(tcpConn, measurements)
 	if err != nil {
 		log.Errorf("Failed to send measurements to server: %v", err)
 	}
@@ -54,12 +53,12 @@ func receiveTrains(conn *net.UDPConn) ([]api.Measurement, error) {
 	bw := make([]int64, static.TrainCount)
 
 	for i := 0; i < static.TrainCount; i++ {
-		train, err := receiveTrain(conn)
+		train, err := client.ReceiveTrain(conn, static.TrainLength)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to receive packet train: %v", err)
 		}
 
-		delta := getDelta(train[1].Received, train[static.TrainLength-1].Received)
+		delta := client.GetDelta(train[1].Received, train[static.TrainLength-1].Received)
 		log.Infof("delta: %d usec", delta)
 		bw[i] = (train[1].Size << 3) * (static.TrainLength - 1) / delta
 		log.Infof("bw: %d Mbps", bw[i])
@@ -80,49 +79,4 @@ func receiveTrains(conn *net.UDPConn) ([]api.Measurement, error) {
 	log.Infof("Bandwidth: %d Mbps", mode)
 
 	return measurements, nil
-}
-
-func sendMeasurements(conn *net.TCPConn, measurements []api.Measurement) error {
-	b, err := json.Marshal(measurements)
-	if err != nil {
-		return err
-	}
-
-	_, err = conn.Write(b)
-	return err
-}
-
-func receiveTrain(conn *net.UDPConn) ([]*api.Received, error) {
-	buf := make([]byte, 1024)
-	pkts := make([]*api.Received, 0)
-
-	for j := 0; j < static.TrainLength; j++ {
-		n, err := conn.Read(buf)
-		if err != nil {
-			return nil, err
-		}
-
-		var pkt = &api.Packet{}
-		err = json.Unmarshal(buf[:n], pkt)
-		if err != nil {
-			return nil, err
-		}
-
-		t := time.Now().UTC()
-		rcvd := &api.Received{
-			Sequence: pkt.Sequence,
-			Sent:     time.UnixMicro(pkt.Sent),
-			Received: t,
-			Size:     int64(n),
-		}
-
-		pkts = append(pkts, rcvd)
-	}
-	return pkts, nil
-}
-
-// Compute the difference between two timestamps in microseconds.
-func getDelta(first time.Time, last time.Time) int64 {
-	return (last.Unix()-first.Unix())*1000000 +
-		(last.UnixMicro() - first.UnixMicro())
 }

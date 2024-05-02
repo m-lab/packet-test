@@ -2,7 +2,7 @@ package handler
 
 import (
 	"encoding/json"
-	"errors"
+	"math"
 	"net"
 	"os"
 	"path"
@@ -13,8 +13,6 @@ import (
 	"github.com/m-lab/packet-test/static"
 	log "github.com/sirupsen/logrus"
 )
-
-var errNoData = errors.New("failed to receive measurement result")
 
 // Client handles requests for packet tests.
 type Client struct {
@@ -45,29 +43,28 @@ func (c *Client) ProcessPacketLoop(conn net.PacketConn, tcpConn *net.TCPListener
 		msg := string(buf[:n])
 		log.Infof("Received UDP packet addr: %s, n: %d, type: %s ", addr.String(), n, msg)
 
-		var result interface{}
-
 		switch msg {
 		case "pair1":
-			err = c.sendPairs(conn, addr)
+			err = c.sendPairs(conn, addr, static.PairGap)
 		case "train1":
-			result, err = c.sendTrains(conn, tcpConn, addr)
+			err = c.sendTrains(conn, addr)
 		}
 
-		err = c.handleResult(conn, msg, err, result)
+		err = c.handleResult(conn, tcpConn, msg, err)
 		if err != nil {
 			log.Errorf("Failed %s test: %v", msg, err)
 		}
 	}
 }
 
-func (c *Client) handleResult(conn net.PacketConn, datatype string, err error, data interface{}) error {
+func (c *Client) handleResult(conn net.PacketConn, tcpConn *net.TCPListener, datatype string, err error) error {
 	if err != nil {
 		return err
 	}
 
-	if data == nil {
-		return errNoData
+	data, err := receiveMeasurements(tcpConn)
+	if err != nil {
+		return err
 	}
 
 	return c.writeMeasurements(conn, datatype, data)
@@ -111,4 +108,28 @@ func sendPacket(conn net.PacketConn, addr net.Addr, pkt *api.Packet) error {
 	}
 
 	return nil
+}
+
+func receiveMeasurements(listener *net.TCPListener) ([]api.Measurement, error) {
+	measurements := make([]api.Measurement, 0)
+
+	conn, err := listener.Accept()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	buf := make([]byte, math.MaxUint16)
+	n, err := conn.Read(buf)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(buf[:n], &measurements)
+	if err != nil {
+		return nil, err
+	}
+
+	return measurements, nil
 }
