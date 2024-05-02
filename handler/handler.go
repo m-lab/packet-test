@@ -50,24 +50,29 @@ func (c *Client) ProcessPacketLoop(conn net.PacketConn, tcpConn *net.TCPListener
 			err = c.sendTrains(conn, addr)
 		}
 
-		err = c.handleResult(conn, tcpConn, msg, err)
+		err = c.handleResult(conn, tcpConn, msg, addr.String(), err)
 		if err != nil {
 			log.Errorf("Failed %s test: %v", msg, err)
 		}
 	}
 }
 
-func (c *Client) handleResult(conn net.PacketConn, tcpConn *net.TCPListener, datatype string, err error) error {
+func (c *Client) handleResult(conn net.PacketConn, tcpConn *net.TCPListener, datatype, addr string, err error) error {
 	if err != nil {
 		return err
 	}
 
-	data, err := receiveMeasurements(tcpConn)
+	measurements, err := receiveMeasurements(tcpConn)
 	if err != nil {
 		return err
 	}
+	result := api.Result{
+		Server:       c.hostname,
+		Client:       addr,
+		Measurements: measurements,
+	}
 
-	return c.writeMeasurements(conn, datatype, data)
+	return c.writeMeasurements(conn, datatype, result)
 }
 
 func (c *Client) writeMeasurements(conn net.PacketConn, datatype string, data interface{}) error {

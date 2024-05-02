@@ -10,16 +10,8 @@ type Packet struct {
 	Data     []byte        // Data transmitted.
 }
 
-// Pair1Result represents the result of a Packet Pair test.
-type Pair1Result struct {
-	Server       string
-	Client       string
-	Measurements []Measurement
-}
-
-// Train1Result represents the result of the train1 test as written
-// to disk.
-type Train1Result struct {
+// Result represents the result of a packet test.
+type Result struct {
 	Server       string
 	Client       string
 	Measurements []Measurement

@@ -23,7 +23,7 @@ func init() {
 func main() {
 	flag.Parse()
 
-	pair1Result := api.Pair1Result{}
+	pair1Result := api.Result{}
 	schema, err := bigquery.InferSchema(pair1Result)
 	rtx.Must(err, "Failed to generate pair1 schema")
 
@@ -34,7 +34,7 @@ func main() {
 	err = os.WriteFile(pair1Schema, json, 0o644)
 	rtx.Must(err, "Failed to write pair1 schema")
 
-	train1Result := api.Train1Result{}
+	train1Result := api.Result{}
 	schema, err = bigquery.InferSchema(train1Result)
 	rtx.Must(err, "Failed to generate train1 schema")
 
