@@ -13,6 +13,7 @@ require (
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v1.1.7 // indirect
 	github.com/apache/arrow/go/v14 v14.0.2 // indirect
+	github.com/araddon/dateparse v0.0.0-20200409225146-d820a6159ab1 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect

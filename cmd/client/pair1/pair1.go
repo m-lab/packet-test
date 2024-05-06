@@ -13,19 +13,16 @@ import (
 	"github.com/m-lab/packet-test/static"
 )
 
+const (
+	datatype = "pair1"
+)
+
 var (
-	server = flag.String("server", "", "Server address")
+	server = flag.String("server", "localhost", "Server address")
 )
 
 func main() {
 	flag.Parse()
-
-	// Set up TCP connection for results.
-	tcpAddr, err := net.ResolveTCPAddr("tcp", *server+":8080")
-	rtx.Must(err, "Resolve TCPAddr failed")
-
-	tcpConn, err := net.DialTCP("tcp", nil, tcpAddr)
-	rtx.Must(err, "DialTCP failed")
 
 	// Set up UDP connection to run the test.
 	udpSocket, err := net.ResolveUDPAddr("udp", *server+":1053")
@@ -34,15 +31,15 @@ func main() {
 	conn, err := net.DialUDP("udp", nil, udpSocket)
 	rtx.Must(err, "DialUDP failed")
 
-	_, err = conn.Write([]byte("pair1"))
+	_, err = conn.Write([]byte(datatype))
 	rtx.Must(err, "Kickoff failed")
 
 	measurements, err := receivePairs(conn)
 	if err != nil {
-		log.Errorf("Packed pair test failed: %v", err)
+		log.Errorf("Packet pair test failed: %v", err)
 	}
 
-	err = client.SendMeasurements(tcpConn, measurements)
+	err = client.SendMeasurements(*server+":8080", datatype, measurements)
 	if err != nil {
 		log.Errorf("Failed to send measurements to server: %v", err)
 	}

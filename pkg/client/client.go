@@ -1,8 +1,11 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"net"
+	"net/http"
 	"time"
 
 	"github.com/m-lab/packet-test/api"
@@ -44,12 +47,13 @@ func GetDelta(first time.Time, last time.Time) int64 {
 		(last.UnixMicro() - first.UnixMicro())
 }
 
-func SendMeasurements(conn *net.TCPConn, measurements []api.Measurement) error {
+func SendMeasurements(addr string, datatype string, measurements []api.Measurement) error {
 	b, err := json.Marshal(measurements)
 	if err != nil {
 		return err
 	}
 
-	_, err = conn.Write(b)
+	url := fmt.Sprintf("http://%s/v0/result?datatype=%s", addr, datatype)
+	_, err = http.Post(url, "application/json", bytes.NewBuffer(b))
 	return err
 }
