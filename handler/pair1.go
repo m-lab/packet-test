@@ -25,7 +25,7 @@ func (c *Client) sendPairs(conn net.PacketConn, addr net.Addr, gapIncr time.Dura
 			return err
 		}
 
-		time.Sleep(gapIncr)
+		time.Sleep(gap)
 		err = sendPacket(conn, addr, pkt)
 		if err != nil {
 			return err
