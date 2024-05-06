@@ -31,7 +31,6 @@ func New(dataDir string, hostname string) *Client {
 }
 
 // ProcessPacketLoop listens for a kickoff UDP packet and then runs a packet test.
-// func (c *Client) ProcessPacketLoop(conn net.PacketConn, tcpConn *net.TCPListener) {
 func (c *Client) ProcessPacketLoop(conn net.PacketConn) {
 	log.Info("Listening for UDP packets")
 
