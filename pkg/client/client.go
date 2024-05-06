@@ -16,6 +16,7 @@ func ReceiveTrain(conn *net.UDPConn, length int) ([]*api.Received, error) {
 	pkts := make([]*api.Received, 0)
 
 	for j := 0; j < length; j++ {
+		conn.SetReadDeadline(time.Now().Add(10 * time.Second))
 		n, err := conn.Read(buf)
 		if err != nil {
 			return nil, err
