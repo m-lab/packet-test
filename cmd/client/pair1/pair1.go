@@ -39,7 +39,7 @@ func main() {
 		log.Errorf("Packet pair test failed: %v", err)
 	}
 
-	err = client.SendMeasurements(*server+":9990", datatype, measurements)
+	err = client.SendMeasurements(*server+":9998", datatype, measurements)
 	if err != nil {
 		log.Errorf("Failed to send measurements to server: %v", err)
 	}

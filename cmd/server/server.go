@@ -36,7 +36,7 @@ func main() {
 	mux.HandleFunc("/v0/result", http.HandlerFunc(h.HandleResult))
 
 	srv := &http.Server{
-		Addr:    *hostname + ":9990",
+		Addr:    *hostname + ":9998",
 		Handler: mux,
 	}
 	rtx.Must(httpx.ListenAndServeAsync(srv), "Failed to start server")
