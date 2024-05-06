@@ -10,26 +10,31 @@ import (
 	"github.com/m-lab/packet-test/static"
 )
 
-func (c *Client) sendPairs(conn net.PacketConn, addr net.Addr) error {
+func (c *Client) sendPairs(conn net.PacketConn, addr net.Addr, gapIncr time.Duration) error {
 	log.Info("Sending pairs")
+
 	pkt := &api.Packet{
 		Sequence: 0,
 		Data:     make([]byte, static.PacketBytes),
 	}
 
+	var gap = 0 * time.Microsecond
 	for i := 0; i < static.PairCount; i++ {
 		err := sendPacket(conn, addr, pkt)
 		if err != nil {
 			return err
 		}
 
+		time.Sleep(gap)
 		err = sendPacket(conn, addr, pkt)
 		if err != nil {
 			return err
 		}
 
-		time.Sleep(static.PairDelay)
 		pkt.Sequence++
+		gap += gapIncr
+		pkt.Gap = gap
+		time.Sleep(static.PairDelay)
 	}
 
 	return nil

@@ -4,19 +4,14 @@ import "time"
 
 // Packet represents the packet sent for network testing.
 type Packet struct {
-	Sequence int    // Sequence.
-	Sent     int64  // Sent timestamp.
-	Data     []byte // Data transmitted.
+	Sequence int           // Sequence.
+	Sent     int64         // Sent timestamp.
+	Gap      time.Duration // Probe gap.
+	Data     []byte        // Data transmitted.
 }
 
-// Pair1Result represents the result of a Packet Pair test.
-type Pair1Result struct {
-	Capacity float64 // Mbps
-}
-
-// Train1Result represents the result of the train1 test as written
-// to disk.
-type Train1Result struct {
+// Result represents the result of a packet test.
+type Result struct {
 	Server       string
 	Client       string
 	Measurements []Measurement
@@ -27,6 +22,7 @@ type Received struct {
 	Sequence int
 	Sent     time.Time
 	Received time.Time
+	Gap      int64 // usecs.
 	Size     int64 // Bytes.
 }
 
