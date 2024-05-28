@@ -6,8 +6,8 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/m-lab/go/httpx"
 	"github.com/m-lab/go/rtx"
+	"github.com/m-lab/ndt-server/ndt7/listener"
 	"github.com/m-lab/packet-test/handler"
 )
 
@@ -31,15 +31,14 @@ func main() {
 	h := handler.New(*dataDir, *hostname)
 	go h.ProcessPacketLoop(conn)
 
-	// Set up result endpoint.
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v0/result", http.HandlerFunc(h.HandleResult))
-
+	mux.HandleFunc("/v0/ndt7", http.HandlerFunc(h.NDT7Download))
 	srv := &http.Server{
 		Addr:    ":9998",
 		Handler: mux,
 	}
-	rtx.Must(httpx.ListenAndServeAsync(srv), "Failed to start server")
+	rtx.Must(listener.ListenAndServeAsync(srv), "Failed to start server")
 	defer srv.Close()
 
 	<-ctx.Done()
