@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/m-lab/go/prometheusx"
 	"github.com/m-lab/ndt-server/data"
+	"github.com/m-lab/ndt-server/metadata"
 	"github.com/m-lab/ndt-server/ndt7/model"
 	"github.com/m-lab/ndt-server/ndt7/spec"
 	"github.com/m-lab/ndt-server/netx"
@@ -48,6 +50,7 @@ func (c *Client) NDT7Download(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	appendClientMetadata(data, req.URL.Query())
 
 	// Set up result.
 	result := setupResult(conn)
@@ -118,4 +121,23 @@ func setupResult(conn *websocket.Conn) *data.NDT7Result {
 		ServerPort:     serverAddr.Port,
 	}
 	return result
+}
+
+// excludeKeyRe is a regexp for excluding request parameters from client metadata.
+var excludeKeyRe = regexp.MustCompile("^server_")
+
+// appendClientMetadata adds |values| to the archival client metadata contained
+// in the request parameter values. Some select key patterns will be excluded.
+func appendClientMetadata(data *model.ArchivalData, values url.Values) {
+	for name, values := range values {
+		if matches := excludeKeyRe.MatchString(name); matches {
+			continue // Skip variables that should be excluded.
+		}
+		data.ClientMetadata = append(
+			data.ClientMetadata,
+			metadata.NameValue{
+				Name:  name,
+				Value: values[0], // NOTE: this will ignore multi-value parameters.
+			})
+	}
 }
