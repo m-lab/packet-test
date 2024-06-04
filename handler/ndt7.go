@@ -39,7 +39,6 @@ func (c *Client) NDT7Download(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	defer conn.Close()
 
 	// Get client parameters (e.g., early_exit, bbr_exit).
 	params, err := getParams(req.URL.Query())
