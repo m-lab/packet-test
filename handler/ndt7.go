@@ -92,10 +92,10 @@ func getParams(values url.Values) (*sender.Params, error) {
 		switch name {
 		case static.EarlyExitParameterName:
 			bytes, _ := strconv.ParseInt(values[0], 10, 64)
-			params.IsEarlyExit = true
 			params.MaxBytes = bytes * 1000000 // Conver MB to bytes.
 		case static.BBRExitParameterName:
-			params.IsBBRExit = true
+			cwnd, _ := strconv.ParseUint(values[0], 10, 32)
+			params.MaxCwndGain = uint32(cwnd)
 		}
 	}
 	return params, nil
