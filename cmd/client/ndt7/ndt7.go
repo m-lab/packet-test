@@ -29,7 +29,6 @@ func main() {
 	url := fmt.Sprintf("ws://%s:9998/v0/ndt7?%s", *server, *params)
 	conn, _, err := dialer.DialContext(ctx, url, http.Header{})
 	rtx.Must(err, "Dial failed", err)
-	defer conn.Close()
 
 	for {
 		mtype, msg, err := conn.ReadMessage()
