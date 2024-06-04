@@ -19,6 +19,7 @@ const (
 
 var (
 	server = flag.String("server", "localhost", "Server address")
+	params = flag.String("params", "", "Client paramerters")
 )
 
 func main() {
@@ -39,7 +40,7 @@ func main() {
 		log.Errorf("Packet train test failed: %v", err)
 	}
 
-	err = client.SendMeasurements(*server+":9998", datatype, measurements)
+	err = client.SendMeasurements(*server+":9998", datatype, *params, measurements)
 	if err != nil {
 		log.Errorf("Failed to send measurements to server: %v", err)
 	}

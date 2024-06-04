@@ -48,13 +48,13 @@ func GetDelta(first time.Time, last time.Time) int64 {
 		(last.UnixMicro() - first.UnixMicro())
 }
 
-func SendMeasurements(addr string, datatype string, measurements []api.Measurement) error {
+func SendMeasurements(addr, datatype, params string, measurements []api.Measurement) error {
 	b, err := json.Marshal(measurements)
 	if err != nil {
 		return err
 	}
 
-	url := fmt.Sprintf("http://%s/v0/result?datatype=%s", addr, datatype)
+	url := fmt.Sprintf("http://%s/v0/result?datatype=%s&%s", addr, datatype, params)
 	_, err = http.Post(url, "application/json", bytes.NewBuffer(b))
 	return err
 }

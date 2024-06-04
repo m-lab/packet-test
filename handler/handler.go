@@ -6,11 +6,13 @@ import (
 	"math"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"time"
 
 	"github.com/m-lab/go/timex"
+	"github.com/m-lab/ndt-server/metadata"
 	"github.com/m-lab/packet-test/api"
 	"github.com/m-lab/packet-test/static"
 	log "github.com/sirupsen/logrus"
@@ -67,9 +69,10 @@ func (c *Client) HandleResult(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	result := api.Result{
-		Server:       c.hostname,
-		Client:       req.RemoteAddr,
-		Measurements: measurements,
+		Server:         c.hostname,
+		Client:         req.RemoteAddr,
+		ClientMetadata: getClientMetadata(req.URL.Query()),
+		Measurements:   measurements,
 	}
 
 	err = c.writeMeasurements(req.URL.Query().Get("datatype"), result)
@@ -147,4 +150,15 @@ func receiveMeasurements(listener *net.TCPListener) ([]api.Measurement, error) {
 	}
 
 	return measurements, nil
+}
+
+func getClientMetadata(values url.Values) []metadata.NameValue {
+	md := make([]metadata.NameValue, 0)
+	for name, values := range values {
+		md = append(md, metadata.NameValue{
+			Name:  name,
+			Value: values[0],
+		})
+	}
+	return md
 }
