@@ -6,12 +6,14 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/apex/log"
 
 	"github.com/gorilla/websocket"
 	"github.com/m-lab/go/rtx"
 	"github.com/m-lab/ndt-server/ndt7/model"
+	"github.com/m-lab/ndt-server/ndt7/spec"
 )
 
 var (
@@ -23,10 +25,11 @@ func main() {
 	flag.Parse()
 
 	dialer := websocket.Dialer{}
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(spec.MaxRuntime))
 	url := fmt.Sprintf("ws://%s:9998/v0/ndt7?%s", *server, *params)
 	conn, _, err := dialer.DialContext(ctx, url, http.Header{})
 	rtx.Must(err, "Dial failed", err)
+	defer conn.Close()
 
 	for {
 		mtype, msg, err := conn.ReadMessage()
