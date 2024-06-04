@@ -1,6 +1,10 @@
 package api
 
-import "time"
+import (
+	"time"
+
+	"github.com/m-lab/ndt-server/metadata"
+)
 
 // Packet represents the packet sent for network testing.
 type Packet struct {
@@ -12,9 +16,10 @@ type Packet struct {
 
 // Result represents the result of a packet test.
 type Result struct {
-	Server       string
-	Client       string
-	Measurements []Measurement
+	Server         string
+	Client         string
+	ClientMetadata []metadata.NameValue
+	Measurements   []Measurement
 }
 
 // Received encapsulates the structure received over the network
