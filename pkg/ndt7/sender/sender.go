@@ -16,8 +16,7 @@ import (
 
 // Params defines the parameters for the sender to end the test early.
 type Params struct {
-	IsBBRExit   bool
-	IsEarlyExit bool
+	MaxCwndGain uint32
 	MaxBytes    int64
 }
 
@@ -84,14 +83,13 @@ func Start(ctx context.Context, conn *websocket.Conn, data *model.ArchivalData, 
 			}
 
 			if m.TCPInfo != nil {
-				// End the test once enough bytes have been acked.
-				if params.IsEarlyExit && m.TCPInfo.BytesAcked >= params.MaxBytes {
+				if isEarlyExitDone(params, m) && isBBRExitDone(params, m) {
 					closer.StartClosing(conn)
 					return nil
-				}
-
-				// End the test once BBR says the link has been saturated.
-				if params.IsBBRExit && m.BBRInfo.CwndGain >= 512 {
+				} else if isEarlyExitDone(params, m) {
+					closer.StartClosing(conn)
+					return nil
+				} else if isBBRExitDone(params, m) {
 					closer.StartClosing(conn)
 					return nil
 				}
@@ -124,4 +122,12 @@ func Start(ctx context.Context, conn *websocket.Conn, data *model.ArchivalData, 
 			}
 		}
 	}
+}
+
+func isEarlyExitDone(params *Params, m model.Measurement) bool {
+	return params.MaxBytes > 0 && m.TCPInfo.BytesAcked >= params.MaxBytes
+}
+
+func isBBRExitDone(params *Params, m model.Measurement) bool {
+	return params.MaxCwndGain > 0 && m.BBRInfo.CwndGain >= params.MaxCwndGain
 }
