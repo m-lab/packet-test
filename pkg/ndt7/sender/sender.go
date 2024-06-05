@@ -83,9 +83,11 @@ func Start(ctx context.Context, conn *websocket.Conn, data *model.ArchivalData, 
 			}
 
 			if m.TCPInfo != nil {
-				if isEarlyExitDone(params, m) && isBBRExitDone(params, m) {
-					closer.StartClosing(conn)
-					return nil
+				if params.MaxBytes > 0 && params.MaxCwndGain > 0 {
+					if m.TCPInfo.BytesAcked >= params.MaxBytes && m.BBRInfo.CwndGain >= params.MaxCwndGain {
+						closer.StartClosing(conn)
+						return nil
+					}
 				} else if isEarlyExitDone(params, m) {
 					closer.StartClosing(conn)
 					return nil

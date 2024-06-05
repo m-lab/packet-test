@@ -9,5 +9,6 @@ RUN go mod download
 COPY ./ ./
 RUN go build -v ./cmd/client/pair1
 RUN go build -v ./cmd/client/train1
+RUN go build -v ./cmd/client/ndt7
 
 ENTRYPOINT [ "./batch.sh" ]
