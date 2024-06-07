@@ -27,7 +27,7 @@ func main() {
 	dialer := websocket.Dialer{}
 	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(spec.MaxRuntime))
 	url := fmt.Sprintf("ws://%s:9998/v0/ndt7?%s", *server, *params)
-	conn, _, err := dialer.DialContext(ctx, url, http.Header{})
+	conn, _, err := dialer.DialContext(context.Background(), url, http.Header{})
 	rtx.Must(err, "Dial failed", err)
 	defer conn.Close()
 
