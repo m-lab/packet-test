@@ -86,9 +86,9 @@ func getData(conn *websocket.Conn) (*model.ArchivalData, error) {
 	return data, nil
 }
 
-func getParams(values url.Values) (*sender.Params, error) {
+func getParams(urlValues url.Values) (*sender.Params, error) {
 	params := &sender.Params{}
-	for name, values := range values {
+	for name, values := range urlValues {
 		value := values[0]
 		switch name {
 		case static.EarlyExitParameterName:
