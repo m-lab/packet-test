@@ -40,7 +40,7 @@ func (c *Client) NDT7Download(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Get client parameters (e.g., early_exit, bbr_exit).
+	// Get client parameters.
 	params, err := getParams(req.URL.Query())
 
 	// Get data.
@@ -89,12 +89,13 @@ func getData(conn *websocket.Conn) (*model.ArchivalData, error) {
 func getParams(values url.Values) (*sender.Params, error) {
 	params := &sender.Params{}
 	for name, values := range values {
+		value := values[0]
 		switch name {
 		case static.EarlyExitParameterName:
-			bytes, _ := strconv.ParseInt(values[0], 10, 64)
-			params.MaxBytes = bytes * 1000000 // Conver MB to bytes.
-		case static.BBRExitParameterName:
-			cwnd, _ := strconv.ParseUint(values[0], 10, 32)
+			bytes, _ := strconv.ParseInt(value, 10, 64)
+			params.MaxBytes = bytes * 1000000 // Convert MB to bytes.
+		case static.MaxCwndGainParameterName:
+			cwnd, _ := strconv.ParseUint(value, 10, 32)
 			params.MaxCwndGain = uint32(cwnd)
 		}
 	}

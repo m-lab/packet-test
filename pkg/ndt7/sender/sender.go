@@ -16,8 +16,8 @@ import (
 
 // Params defines the parameters for the sender to end the test early.
 type Params struct {
-	MaxCwndGain uint32
-	MaxBytes    int64
+	MaxBytes    int64  // TCPInfo.BytesAcked is of type int64.
+	MaxCwndGain uint32 // BBRInfo.CwndGain is of type uint32.
 }
 
 func makePreparedMessage(size int) (*websocket.PreparedMessage, error) {
@@ -82,16 +82,15 @@ func Start(ctx context.Context, conn *websocket.Conn, data *model.ArchivalData, 
 				return err
 			}
 
+			// Check if the test should be terminated early.
 			if m.TCPInfo != nil {
-				if params.MaxBytes > 0 && params.MaxCwndGain > 0 {
-					if m.TCPInfo.BytesAcked >= params.MaxBytes && m.BBRInfo.CwndGain >= params.MaxCwndGain {
-						closer.StartClosing(conn)
-						return nil
-					}
-				} else if isEarlyExitDone(params, m) {
+				switch {
+				case isEarlyExitDone(params, m):
+					log.Infof("sender: terminating test after %d BytesAcked", m.TCPInfo.BytesAcked)
 					closer.StartClosing(conn)
 					return nil
-				} else if isBBRExitDone(params, m) {
+				case isMaxCwndGainDone(params, m):
+					log.Infof("sender: terminating test after %d CwndGain", m.BBRInfo.CwndGain)
 					closer.StartClosing(conn)
 					return nil
 				}
@@ -130,6 +129,6 @@ func isEarlyExitDone(params *Params, m model.Measurement) bool {
 	return params.MaxBytes > 0 && m.TCPInfo.BytesAcked >= params.MaxBytes
 }
 
-func isBBRExitDone(params *Params, m model.Measurement) bool {
+func isMaxCwndGainDone(params *Params, m model.Measurement) bool {
 	return params.MaxCwndGain > 0 && m.BBRInfo.CwndGain >= params.MaxCwndGain
 }
