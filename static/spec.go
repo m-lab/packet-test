@@ -12,6 +12,7 @@ const (
 	TrainCount             = 10
 	TrainDelay             = 1 * time.Second
 	TrainLength            = 30
+	NDT7DownloadURLPath    = "/v0/ndt7/download"
 	EarlyExitParameterName = "early_exit"
 	// MaxCwndGainParameterName is the name of a client parameter whose value indicates a BBR
 	// congestion window (cwnd) gain after which the test should exit.

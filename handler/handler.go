@@ -20,14 +20,15 @@ import (
 
 // Client handles requests for packet tests.
 type Client struct {
-	dataDir  string
+	// DataDir is the directory where measurement results are saved.
+	DataDir  string
 	hostname string
 }
 
 // New returns a new instance of *Client.
 func New(dataDir string, hostname string) *Client {
 	return &Client{
-		dataDir:  dataDir,
+		DataDir:  dataDir,
 		hostname: hostname,
 	}
 }
@@ -86,7 +87,7 @@ func (c *Client) HandleResult(rw http.ResponseWriter, req *http.Request) {
 
 func (c *Client) writeMeasurements(datatype string, data interface{}) error {
 	t := time.Now().UTC()
-	dir := path.Join(c.dataDir, datatype, t.Format(timex.YYYYMMDDWithSlash))
+	dir := path.Join(c.DataDir, datatype, t.Format(timex.YYYYMMDDWithSlash))
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
 		return err
