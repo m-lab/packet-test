@@ -9,6 +9,7 @@ import (
 	"github.com/m-lab/go/rtx"
 	"github.com/m-lab/ndt-server/ndt7/listener"
 	"github.com/m-lab/packet-test/handler"
+	"github.com/m-lab/packet-test/static"
 )
 
 var (
@@ -33,7 +34,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v0/result", http.HandlerFunc(h.HandleResult))
-	mux.HandleFunc("/v0/ndt7", http.HandlerFunc(h.NDT7Download))
+	mux.HandleFunc(static.NDT7DownloadURLPath, http.HandlerFunc(h.NDT7Download))
 	srv := &http.Server{
 		Addr:    ":9998",
 		Handler: mux,
