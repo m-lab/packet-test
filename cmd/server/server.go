@@ -18,7 +18,7 @@ var (
 	ctx, cancel    = context.WithCancel(context.Background())
 	dataDir        = flag.String("datadir", "./data", "Path to write data out to.")
 	hostname       = flag.String("hostname", "localhost", "Server hostname.")
-	address        = flag.String("address", ":8008", "Listen address/port for connections.")
+	address        = flag.String("address", ":80", "Listen address/port for connections.")
 	tokenVerifyKey = flagx.FileBytesArray{}
 	tokenVerify    bool
 	tokenMachine   string
