@@ -28,6 +28,7 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.3 // indirect
 	github.com/gorilla/handlers v1.5.1 // indirect
+	github.com/justinas/alice v1.2.0 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
 	github.com/m-lab/tcp-info v1.5.3 // indirect
@@ -63,12 +64,14 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240314234333-6e1732d8331c // indirect
 	google.golang.org/grpc v1.62.1 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
+	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
 require (
 	github.com/apex/log v1.9.0
 	github.com/gorilla/websocket v1.5.1
+	github.com/m-lab/access v0.0.11
 	github.com/m-lab/ndt-server v0.22.0
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/sys v0.19.0 // indirect
