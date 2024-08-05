@@ -34,7 +34,7 @@ func main() {
 	flag.Parse()
 
 	v, err := token.NewVerifier(tokenVerifyKey.Get()...)
-	if (tokenVerify) && err != nil {
+	if tokenVerify {
 		rtx.Must(err, "Failed to load verifier")
 	}
 	paths := controller.Paths{
