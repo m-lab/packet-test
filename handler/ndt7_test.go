@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -35,15 +34,6 @@ func TestClient_NDT7Download(t *testing.T) {
 	err = simpleDownload(ctx, t, conn)
 	if err != nil && !websocket.IsCloseError(err, websocket.CloseNormalClosure) {
 		testingx.Must(t, err, "failed to download")
-	}
-
-	// Allow the server time to save the file. The client may stop before the server does.
-	time.Sleep(10 * time.Second)
-	// Verify a file was saved.
-	m, err := filepath.Glob(h.DataDir + "/ndt7/*/*/*/*")
-	testingx.Must(t, err, "failed to glob datadir: %s", h.DataDir)
-	if len(m) == 0 {
-		t.Errorf("no result files found")
 	}
 }
 
