@@ -97,6 +97,9 @@ func getParams(urlValues url.Values) (*sender.Params, error) {
 		case static.MaxCwndGainParameterName:
 			cwnd, _ := strconv.ParseUint(value, 10, 32)
 			params.MaxCwndGain = uint32(cwnd)
+		case static.MaxElapsedTimeParameterName:
+			time, _ := strconv.ParseInt(value, 10, 64)
+			params.MaxElapsedTime = time
 		}
 	}
 	return params, nil
