@@ -16,8 +16,33 @@ import (
 
 // Params defines the parameters for the sender to end the test early.
 type Params struct {
-	MaxBytes    int64  // TCPInfo.BytesAcked is of type int64.
-	MaxCwndGain uint32 // BBRInfo.CwndGain is of type uint32.
+	MaxBytes       int64  // TCPInfo.BytesAcked is of type int64.
+	MaxElapsedTime int64  // TCPInfo.ElapsedTime is of type int64.
+	MaxCwndGain    uint32 // BBRInfo.CwndGain is of type uint32.
+}
+
+func (p *Params) isEarlyExitLimit() bool {
+	return p.MaxBytes > 0
+}
+
+func (p *Params) isMaxElapsedTimeLimit() bool {
+	return p.MaxElapsedTime > 0
+}
+
+func (p *Params) isMaxCwndGainLimit() bool {
+	return p.MaxCwndGain > 0
+}
+
+func (p *Params) isEarlyExitDone(m model.Measurement) bool {
+	return m.TCPInfo.BytesAcked >= p.MaxBytes
+}
+
+func (p *Params) isMaxElapsedTimeDone(m model.Measurement) bool {
+	return m.TCPInfo.ElapsedTime >= p.MaxElapsedTime
+}
+
+func (p *Params) isMaxCwndGainDone(m model.Measurement) bool {
+	return m.BBRInfo.CwndGain >= p.MaxCwndGain
 }
 
 func makePreparedMessage(size int) (*websocket.PreparedMessage, error) {
@@ -83,17 +108,9 @@ func Start(ctx context.Context, conn *websocket.Conn, data *model.ArchivalData, 
 			}
 
 			// Check if the test should be terminated early.
-			if m.TCPInfo != nil {
-				switch {
-				case isEarlyExitDone(params, m):
-					log.Infof("sender: terminating test after %d BytesAcked", m.TCPInfo.BytesAcked)
-					closer.StartClosing(conn)
-					return nil
-				case isMaxCwndGainDone(params, m):
-					log.Infof("sender: terminating test after %d CwndGain", m.BBRInfo.CwndGain)
-					closer.StartClosing(conn)
-					return nil
-				}
+			if m.TCPInfo != nil && terminateTest(params, m) {
+				closer.StartClosing(conn)
+				return nil
 			}
 
 		default:
@@ -125,10 +142,28 @@ func Start(ctx context.Context, conn *websocket.Conn, data *model.ArchivalData, 
 	}
 }
 
-func isEarlyExitDone(params *Params, m model.Measurement) bool {
-	return params.MaxBytes > 0 && m.TCPInfo.BytesAcked >= params.MaxBytes
-}
+func terminateTest(p *Params, m model.Measurement) bool {
+	switch {
+	case p.isMaxCwndGainLimit() && p.isMaxElapsedTimeLimit():
+		if p.isMaxCwndGainDone(m) && p.isMaxElapsedTimeDone(m) {
+			log.Infof("sender: terminating test after %d CwndGain and %d ElapsedTime (s)", m.BBRInfo.CwndGain, m.TCPInfo.ElapsedTime)
+			return true
+		}
+	case p.isMaxCwndGainLimit() && p.isEarlyExitLimit():
+		if p.isMaxCwndGainDone(m) && p.isEarlyExitDone(m) {
+			log.Infof("sender: terminating test after %d CwndGain and %d BytesAcked", m.BBRInfo.CwndGain, m.TCPInfo.BytesAcked)
+			return true
+		}
+	case p.isMaxCwndGainLimit() && p.isMaxCwndGainDone(m):
+		log.Infof("sender: terminating test after %d CwndGain", m.BBRInfo.CwndGain)
+		return true
+	case p.isEarlyExitLimit() && p.isEarlyExitDone(m):
+		log.Infof("sender: terminating test after %d BytesAcked", m.TCPInfo.BytesAcked)
+		return true
+	case p.isMaxElapsedTimeLimit() && p.isMaxElapsedTimeDone(m):
+		log.Infof("sender: terminating test after %d ElapsedTime (s)", m.TCPInfo.ElapsedTime)
+		return true
+	}
 
-func isMaxCwndGainDone(params *Params, m model.Measurement) bool {
-	return params.MaxCwndGain > 0 && m.BBRInfo.CwndGain >= params.MaxCwndGain
+	return false
 }
