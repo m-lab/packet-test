@@ -19,6 +19,9 @@ var (
 	dataDir        = flag.String("datadir", "./data", "Path to write data out to.")
 	hostname       = flag.String("hostname", "localhost", "Server hostname.")
 	address        = flag.String("address", ":80", "Listen address/port for connections.")
+	addressSecure  = flag.String("address-secure", ":443", "Listen address/port for secure connections.")
+	certFile       = flag.String("cert", "", "The file with server certificates in PEM format.")
+	keyFile        = flag.String("key", "", "The file with server key in PEM format.")
 	tokenVerifyKey = flagx.FileBytesArray{}
 	tokenVerify    bool
 	tokenMachine   string
@@ -52,6 +55,15 @@ func main() {
 	}
 	rtx.Must(listener.ListenAndServeAsync(srv), "Failed to start server")
 	defer srv.Close()
+
+	if *certFile != "" && *keyFile != "" {
+		srvSecure := &http.Server{
+			Addr:    *addressSecure,
+			Handler: acm.Then(mux),
+		}
+		rtx.Must(listener.ListenAndServeTLSAsync(srvSecure, *certFile, *keyFile), "Failed to start secure server")
+		defer srvSecure.Close()
+	}
 
 	<-ctx.Done()
 	cancel()
