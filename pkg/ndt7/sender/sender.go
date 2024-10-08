@@ -148,7 +148,7 @@ func Start(ctx context.Context, conn *websocket.Conn, data *model.ArchivalData, 
 	}
 }
 
-func terminateImmediately(p *Params, mr *measurer.Monitor, conn *websocket.Conn, data *model.ArchivalData) bool {
+func terminateImmediately(p *Params, mr *measurer.Measurer, conn *websocket.Conn, data *model.ArchivalData) bool {
 	if !p.ImmediateExit {
 		return false
 	}
