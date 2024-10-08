@@ -8,10 +8,10 @@ import (
 	"github.com/apex/log"
 	"github.com/gorilla/websocket"
 	"github.com/m-lab/ndt-server/ndt7/closer"
-	"github.com/m-lab/ndt-server/ndt7/measurer"
 	"github.com/m-lab/ndt-server/ndt7/model"
 	"github.com/m-lab/ndt-server/ndt7/ping"
 	"github.com/m-lab/ndt-server/ndt7/spec"
+	"github.com/m-lab/packet-test/pkg/ndt7/measurer"
 )
 
 // Params defines the parameters for the sender to end the test early.
@@ -19,6 +19,7 @@ type Params struct {
 	MaxBytes       int64  // TCPInfo.BytesAcked is of type int64.
 	MaxElapsedTime int64  // TCPInfo.ElapsedTime is of type int64.
 	MaxCwndGain    uint32 // BBRInfo.CwndGain is of type uint32.
+	ImmediateExit  bool
 }
 
 func (p *Params) isEarlyExitLimit() bool {
@@ -62,7 +63,6 @@ func makePreparedMessage(size int) (*websocket.PreparedMessage, error) {
 // MaxRuntime of the subtest. This is enforced by setting the write deadline to
 // Time.Now() + MaxRuntime.
 func Start(ctx context.Context, conn *websocket.Conn, data *model.ArchivalData, params *Params) error {
-
 	// Start collecting connection measurements. Measurements will be sent to
 	// src until DefaultRuntime, when the src channel is closed.
 	mr := measurer.New(conn, data.UUID)
@@ -118,6 +118,12 @@ func Start(ctx context.Context, conn *websocket.Conn, data *model.ArchivalData, 
 				log.Errorf("sender: conn.WritePreparedMessage failed", err)
 				return err
 			}
+
+			if terminateImmediately(params, mr, conn, data) {
+				closer.StartClosing(conn)
+				return nil
+			}
+
 			// The following block of code implements the scaling of message size
 			// as recommended in the spec's appendix. We're not accounting for the
 			// size of JSON messages because that is small compared to the bulk
@@ -140,6 +146,29 @@ func Start(ctx context.Context, conn *websocket.Conn, data *model.ArchivalData, 
 			}
 		}
 	}
+}
+
+func terminateImmediately(p *Params, mr *measurer.Monitor, conn *websocket.Conn, data *model.ArchivalData) bool {
+	if !p.ImmediateExit {
+		return false
+	}
+
+	m, err := mr.GetMeasurement()
+	if err != nil {
+		return false
+	}
+
+	if !terminateTest(p, m) {
+		return false
+	}
+
+	// Send and save the last snapshot.
+	if err := conn.WriteJSON(m); err != nil {
+		log.Errorf("sender: conn.WriteJSON failed", err)
+	}
+	data.ServerMeasurements = append(data.ServerMeasurements, m)
+
+	return true
 }
 
 func terminateTest(p *Params, m model.Measurement) bool {

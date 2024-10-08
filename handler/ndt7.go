@@ -100,6 +100,8 @@ func getParams(urlValues url.Values) (*sender.Params, error) {
 		case static.MaxElapsedTimeParameterName:
 			time, _ := strconv.ParseInt(value, 10, 64)
 			params.MaxElapsedTime = time
+		case static.ImmediateExitParameterName:
+			params.ImmediateExit, _ = strconv.ParseBool(value)
 		}
 	}
 	return params, nil
