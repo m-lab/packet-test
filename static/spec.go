@@ -13,15 +13,15 @@ const (
 	TrainDelay             = 1 * time.Second
 	TrainLength            = 30
 	NDT7DownloadURLPath    = "/v0/ndt7/download"
-	EarlyExitParameterName = "client_early_exit"
+	EarlyExitParameterName = "early_exit"
 	// MaxCwndGainParameterName is the name of a client parameter whose value indicates a BBR
 	// congestion window (cwnd) gain after which the test should exit.
-	MaxCwndGainParameterName = "client_max_cwnd_gain"
+	MaxCwndGainParameterName = "max_cwnd_gain"
 	// MaxElapsedTime is the name of a client parameter whose values indicates the
 	// number of seconds after which the test should exit.
-	MaxElapsedTimeParameterName = "client_max_elapsed_time"
+	MaxElapsedTimeParameterName = "max_elapsed_time"
 	// ImmediateExitParameterName is the name of the parameter to indicate that the termination
-	// behavior of the test should be immediate, instead of waiting for snapshots to be
-	// taken.
-	ImmediateExitParameterName = "client_immediate_exit"
+	// behavior of the test should be immediate, instead of waiting for TCPInfo and BBRInfo
+	// snapshots to be emitted.
+	ImmediateExitParameterName = "immediate_exit"
 )

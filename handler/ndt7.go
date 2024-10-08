@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/apex/log"
@@ -90,6 +91,7 @@ func getParams(urlValues url.Values) (*sender.Params, error) {
 	params := &sender.Params{}
 	for name, values := range urlValues {
 		value := values[0]
+		name = strings.TrimPrefix(name, "client_")
 		switch name {
 		case static.EarlyExitParameterName:
 			bytes, _ := strconv.ParseInt(value, 10, 64)
