@@ -14,8 +14,8 @@ import (
 	"github.com/m-lab/go/memoryless"
 	"github.com/m-lab/ndt-server/logging"
 	"github.com/m-lab/ndt-server/ndt7/model"
-	"github.com/m-lab/ndt-server/ndt7/spec"
 	"github.com/m-lab/ndt-server/netx"
+	"github.com/m-lab/packet-test/static"
 )
 
 var (
@@ -98,9 +98,9 @@ func (m *Measurer) loop(ctx context.Context, timeout time.Duration, dst chan<- m
 	// Implementation note: the ticker will close its output channel
 	// after the controlling context is expired.
 	ticker, err := memoryless.NewTicker(measurerctx, memoryless.Config{
-		Min:      spec.MinPoissonSamplingInterval,
-		Expected: spec.AveragePoissonSamplingInterval,
-		Max:      spec.MaxPoissonSamplingInterval,
+		Min:      static.MinPoissonSamplingInterval,
+		Expected: static.AveragePoissonSamplingInterval,
+		Max:      static.MaxPoissonSamplingInterval,
 	})
 	if err != nil {
 		logging.Logger.WithError(err).Warn("memoryless.NewTicker failed")
