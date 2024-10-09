@@ -24,4 +24,18 @@ const (
 	// behavior of the test should be immediate, instead of waiting for TCPInfo and BBRInfo
 	// snapshots to be emitted.
 	ImmediateExitParameterName = "immediate_exit"
+
+	// MinPoissonSamplingInterval is the min acceptable time that we want
+	// the lambda distribution to return. Smaller values will be clamped
+	// to be this value instead.
+	MinPoissonSamplingInterval = 25 * time.Millisecond
+
+	// AveragePoissonSamplingInterval is the average of a lambda distribution
+	// used to decide when to perform next measurement.
+	AveragePoissonSamplingInterval = 100 * time.Millisecond
+
+	// MaxPoissonSamplingInterval is the max acceptable time that we want
+	// the lambda distribution to return. Bigger values will be clamped
+	// to be this value instead.
+	MaxPoissonSamplingInterval = 250 * time.Millisecond
 )
