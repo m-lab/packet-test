@@ -16,8 +16,8 @@ import (
 
 // Params defines the parameters for the sender to end the test early.
 type Params struct {
-	MaxBytes       int64  // TCPInfo.BytesAcked is of type int64.
-	MaxElapsedTime int64  // TCPInfo.ElapsedTime is of type int64.
+	MaxBytes       int64  // TCPInfo.BytesAcked is of type int64 (bytes).
+	MaxElapsedTime int64  // TCPInfo.ElapsedTime is of type int64 (microseconds).
 	MaxCwndGain    uint32 // BBRInfo.CwndGain is of type uint32.
 	ImmediateExit  bool
 }
@@ -175,7 +175,7 @@ func terminateTest(p *Params, m model.Measurement) bool {
 	switch {
 	case p.isMaxCwndGainLimit() && p.isMaxElapsedTimeLimit():
 		if p.isMaxCwndGainDone(m) && p.isMaxElapsedTimeDone(m) {
-			log.Infof("sender: terminating test after %d CwndGain and %d ElapsedTime (s)", m.BBRInfo.CwndGain, m.TCPInfo.ElapsedTime)
+			log.Infof("sender: terminating test after %d CwndGain and %d ElapsedTime (µs)", m.BBRInfo.CwndGain, m.TCPInfo.ElapsedTime)
 			return true
 		}
 	case p.isMaxCwndGainLimit() && p.isEarlyExitLimit():
@@ -190,7 +190,7 @@ func terminateTest(p *Params, m model.Measurement) bool {
 		log.Infof("sender: terminating test after %d BytesAcked", m.TCPInfo.BytesAcked)
 		return true
 	case p.isMaxElapsedTimeLimit() && p.isMaxElapsedTimeDone(m):
-		log.Infof("sender: terminating test after %d ElapsedTime (s)", m.TCPInfo.ElapsedTime)
+		log.Infof("sender: terminating test after %d ElapsedTime (µs)", m.TCPInfo.ElapsedTime)
 		return true
 	}
 
