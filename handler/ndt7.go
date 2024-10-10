@@ -42,7 +42,12 @@ func (c *Client) NDT7Download(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	// Get client parameters.
-	params, err := getParams(req.URL.Query())
+	params, err := GetParams(req.URL.Query())
+	if err != nil {
+		log.Errorf("Invalid parameters: %v", req.URL.Query())
+		rw.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	// Get data.
 	data, err := getData(conn)
@@ -75,6 +80,44 @@ func (c *Client) NDT7Download(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
+// GetParams interprets and returns the client parameters.
+func GetParams(urlValues url.Values) (*sender.Params, error) {
+	params := &sender.Params{}
+
+	for name, values := range urlValues {
+		value := values[0]
+		name = strings.TrimPrefix(name, "client_")
+
+		switch name {
+		case static.EarlyExitParameterName:
+			bytes, err := strconv.ParseInt(value, 10, 64)
+			if err != nil {
+				return nil, err
+			}
+			params.MaxBytes = bytes * 1000000 // Convert MB to bytes.
+		case static.MaxCwndGainParameterName:
+			cwnd, err := strconv.ParseUint(value, 10, 32)
+			if err != nil {
+				return nil, err
+			}
+			params.MaxCwndGain = uint32(cwnd)
+		case static.MaxElapsedTimeParameterName:
+			time, err := strconv.ParseInt(value, 10, 64)
+			if err != nil {
+				return nil, err
+			}
+			params.MaxElapsedTime = time * 1e6 // Convert seconds to microseconds.
+		case static.ImmediateExitParameterName:
+			immExit, err := strconv.ParseBool(value)
+			if err != nil {
+				return nil, err
+			}
+			params.ImmediateExit = immExit
+		}
+	}
+	return params, nil
+}
+
 func getData(conn *websocket.Conn) (*model.ArchivalData, error) {
 	ci := netx.ToConnInfo(conn.UnderlyingConn())
 	uuid, err := ci.GetUUID()
@@ -85,28 +128,6 @@ func getData(conn *websocket.Conn) (*model.ArchivalData, error) {
 		UUID: uuid,
 	}
 	return data, nil
-}
-
-func getParams(urlValues url.Values) (*sender.Params, error) {
-	params := &sender.Params{}
-	for name, values := range urlValues {
-		value := values[0]
-		name = strings.TrimPrefix(name, "client_")
-		switch name {
-		case static.EarlyExitParameterName:
-			bytes, _ := strconv.ParseInt(value, 10, 64)
-			params.MaxBytes = bytes * 1000000 // Convert MB to bytes.
-		case static.MaxCwndGainParameterName:
-			cwnd, _ := strconv.ParseUint(value, 10, 32)
-			params.MaxCwndGain = uint32(cwnd)
-		case static.MaxElapsedTimeParameterName:
-			time, _ := strconv.ParseInt(value, 10, 64)
-			params.MaxElapsedTime = time
-		case static.ImmediateExitParameterName:
-			params.ImmediateExit, _ = strconv.ParseBool(value)
-		}
-	}
-	return params, nil
 }
 
 // setupResult creates an NDT7Result from the given conn.
